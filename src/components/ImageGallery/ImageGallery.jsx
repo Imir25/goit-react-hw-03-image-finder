@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import s from './ImageGallery.module.css';
 import getImages from '../services/imgApi';
@@ -6,23 +6,23 @@ import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import Loader from '../Loader/Loader';
 import Button from '../Button/Button';
 
-export default class ImageGallery extends Component {
+class ImageGallery extends Component {
   static propTypes = {
     onClick: PropTypes.func.isRequired,
     inputValue: PropTypes.string.isRequired,
+    page: PropTypes.number.isRequired,
+    loadMoreBtn: PropTypes.func.isRequired,
   };
 
   state = {
     images: [],
     status: 'idle',
+    loadMore: false,
   };
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.inputValue !== this.props.inputValue) {
+    if (prevProps.inputValue !== this.props.inputValue || prevProps.page !== this.props.page) {
       this.fetchLoad();
-    }
-    if (prevProps.page !== this.props.page && this.props.page > 1) {
-      this.fetchLoadMore();
     }
   }
 
@@ -31,29 +31,17 @@ export default class ImageGallery extends Component {
 
     getImages(inputValue, page)
       .then(response => {
-        this.setState({
-          images: response.hits,
-          status: 'resolve',
-        });
-      })
-      .catch(error => this.setState({ status: 'rejected' }));
-  };
-
-  fetchLoadMore = () => {
-    const { inputValue, page } = this.props;
-
-    getImages(inputValue, page)
-      .then(response => {
         this.setState(prevState => ({
-          images: [...prevState.images, ...response.hits],
+          images: page === 1 ? response.hits : [...prevState.images, ...response.hits],
           status: 'resolve',
+          loadMore: page < Math.ceil(response.totalHits / 12),
         }));
       })
       .catch(error => this.setState({ status: 'rejected' }));
   };
 
   render() {
-    const { images, status } = this.state;
+    const { images, status, loadMore } = this.state;
 
     if (status === 'pending') {
       return <Loader />;
@@ -72,13 +60,13 @@ export default class ImageGallery extends Component {
               />
             ))}
           </ul>
-          {this.state.images.length !== 0 ? (
+          {loadMore && (
             <Button onClick={this.props.loadMoreBtn} />
-          ) : (
-            alert('No results')
           )}
         </>
       );
     }
   }
 }
+
+export default ImageGallery;
