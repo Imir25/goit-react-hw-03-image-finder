@@ -9,8 +9,6 @@ import { toast } from 'react-toastify';
 import { animateScroll } from 'react-scroll';
 import 'react-toastify/dist/ReactToastify.css';
 
-
-
 const Status = {
   IDLE: 'idle',
   PENDING: 'pending',
@@ -79,6 +77,7 @@ class App extends Component {
 
   render() {
     const { images, loadMore, status } = this.state;
+    const hasMoreImages = images.length > 0 && loadMore;
 
     return (
       <>
@@ -94,13 +93,13 @@ class App extends Component {
         {status === Status.RESOLVED && (
           <>
             <ImageGallery images={images} />
-            {loadMore && <Button onloadMore={this.onloadMore} />}
+            {hasMoreImages && <Button onloadMore={this.onloadMore} hasMoreImages={hasMoreImages} />}
           </>
         )}
-       <ToastContainer autoClose={3000} />
+        <ToastContainer autoClose={3000} />
       </>
     );
   }
-};
+}
 
 export { App };
